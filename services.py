@@ -20,3 +20,17 @@ def allocate(line: OrderLine, repo: AbstractRepository, session) -> str:
     batchref = model.allocate(line, batches)
     session.commit()
     return batchref
+
+# services.py
+
+def deallocate(orderid: str, sku: str, qty: int, repo: AbstractRepository, session):
+    batches = repo.list()
+    line = model.OrderLine(orderid, sku, qty)
+    
+    for batch in batches:
+        if line in batch._allocations:
+            batch.deallocate(line)
+            session.commit()
+            return
+            
+    raise model.InvalidSku(f"No allocation found for order {orderid} with SKU {sku}")
